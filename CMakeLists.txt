@@ -1,0 +1,514 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(OpenRGB
+        VERSION 0.31
+        LANGUAGES CXX C
+        DESCRIPTION "Open source RGB lighting control that doesn't depend on manufacturer software")
+
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+add_subdirectory(net_port)
+add_subdirectory(super_io)
+add_subdirectory(serial_port)
+
+find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
+find_package(HIDAPI REQUIRED)
+find_package(LibUSB REQUIRED)
+
+## Target ##
+set(OPENRGB_H
+        dependencies/ColorWheel/ColorWheel.h
+        NetworkClient.h
+        NetworkProtocol.h
+        NetworkServer.h
+        ProfileManager.h
+        ResourceManager.h
+        Detector.h
+        DeviceDetector.h
+        i2c_smbus/i2c_smbus.h
+        i2c_tools/i2c_tools.h
+        qt/OpenRGBClientInfoPage.h
+        qt/OpenRGBDeviceInfoPage.h
+        qt/OpenRGBDevicePage.h
+        qt/OpenRGBDialog.h
+        qt/OpenRGBDialog2.h
+        qt/OpenRGBProfileSaveDialog.h
+        qt/OpenRGBServerInfoPage.h
+        qt/OpenRGBSoftwareInfoPage.h
+        qt/OpenRGBSystemInfoPage.h
+        qt/OpenRGBZoneResizeDialog.h
+        Controllers/AMDWraithPrismController/AMDWraithPrismController.h
+        Controllers/AuraUSBController/AuraUSBController.h
+        Controllers/AuraUSBController/AuraAddressableController.h
+        Controllers/AuraUSBController/AuraMainboardController.h
+        Controllers/AuraCoreController/AuraCoreController.h
+        Controllers/AuraGPUController/AuraGPUController.h
+        Controllers/AuraSMBusController/AuraSMBusController.h
+        Controllers/CoolerMasterController/CMMP750Controller.h
+        Controllers/CorsairHydroController/CorsairHydroController.h
+        Controllers/CorsairLightingNodeController/CorsairLightingNodeController.h
+        Controllers/CorsairPeripheralController/CorsairPeripheralController.h
+        Controllers/CorsairVengeanceController/CorsairVengeanceController.h
+        Controllers/CorsairVengeanceProController/CorsairVengeanceProController.h
+        Controllers/CrucialController/CrucialController.h
+        Controllers/DuckyKeyboardController/DuckyKeyboardController.h
+        Controllers/EKController/EKController.h
+        Controllers/GalaxGPUController/GalaxGPUController.h
+        Controllers/GloriousModelOController/GloriousModelOController.h
+        Controllers/HoltekController/HoltekA070Controller.h
+        Controllers/HuePlusController/HuePlusController.h
+        Controllers/HyperXDRAMController/HyperXDRAMController.h
+        Controllers/HyperXKeyboardController/HyperXAlloyOriginsController.h
+        Controllers/HyperXKeyboardController/HyperXKeyboardController.h
+        Controllers/HyperXMouseController/HyperXPulsefireSurgeController.h
+        Controllers/LEDStripController/LEDStripController.h
+        Controllers/LogitechController/LogitechG203Controller.h
+        Controllers/LogitechController/LogitechG203LController.h
+        Controllers/LogitechController/LogitechG403Controller.h
+        Controllers/LogitechController/LogitechG502PSController.h
+        Controllers/LogitechController/LogitechG810Controller.h
+        Controllers/LogitechController/LogitechGProWirelessController.h
+        Controllers/MSI3ZoneController/MSI3ZoneController.h
+        Controllers/MSIGPUController/MSIGPUController.h
+        Controllers/MSIMysticLightController/MSIMysticLightController.h
+        Controllers/MSIRGBController/MSIRGBController.h
+        Controllers/NZXTHue2Controller/NZXTHue2Controller.h
+        Controllers/NZXTKrakenController/NZXTKrakenController.h
+        Controllers/PatriotViperController/PatriotViperController.h
+        Controllers/PolychromeController/PolychromeController.h
+        Controllers/PoseidonZRGBController/PoseidonZRGBController.h
+        Controllers/RGBFusionController/RGBFusionController.h
+        Controllers/RGBFusion2DRAMController/RGBFusion2DRAMController.h
+        Controllers/RGBFusion2SMBusController/RGBFusion2SMBusController.h
+        Controllers/RGBFusion2USBController/RGBFusion2USBController.h
+        Controllers/RGBFusionGPUController/RGBFusionGPUController.h
+        Controllers/RedragonController/RedragonK556Controller.h
+        Controllers/RedragonController/RedragonM711Controller.h
+        Controllers/SapphireGPUController/SapphireGPUController.h
+        Controllers/SteelSeriesController/SteelSeriesRivalController.h
+        Controllers/SteelSeriesController/SteelSeriesSiberiaController.h
+        Controllers/SteelSeriesController/SteelSeriesApexController.h
+        Controllers/TecknetController/TecknetController.h
+        Controllers/ThermaltakeRiingController/ThermaltakeRiingController.h
+        RGBController/RGBController.h
+        RGBController/RGBController_AMDWraithPrism.h
+        RGBController/RGBController_AuraUSB.h
+        RGBController/RGBController_AuraCore.h
+        RGBController/RGBController_AuraGPU.h
+        RGBController/RGBController_AuraSMBus.h
+        RGBController/RGBController_CMMP750Controller.h
+        RGBController/RGBController_CorsairHydro.h
+        RGBController/RGBController_CorsairLightingNode.h
+        RGBController/RGBController_CorsairPeripheral.h
+        RGBController/RGBController_CorsairVengeance.h
+        RGBController/RGBController_CorsairVengeancePro.h
+        RGBController/RGBController_Crucial.h
+        RGBController/RGBController_DuckyKeyboard.h
+        RGBController/RGBController_Dummy.h
+        RGBController/RGBController_EKController.h
+        RGBController/RGBController_E131.h
+        RGBController/RGBController_GalaxGPU.h
+        RGBController/RGBController_GloriousModelO.h
+        RGBController/RGBController_HoltekA070.h
+        RGBController/RGBController_HuePlus.h
+        RGBController/RGBController_HyperXAlloyOrigins.h
+        RGBController/RGBController_HyperXDRAM.h
+        RGBController/RGBController_HyperXKeyboard.h
+        RGBController/RGBController_HyperXPulsefireSurge.h
+        RGBController/RGBController_LEDStrip.h
+        RGBController/RGBController_LogitechG203.h
+        RGBController/RGBController_LogitechG203L.h
+        RGBController/RGBController_LogitechG403.h
+        RGBController/RGBController_LogitechG502PS.h
+        RGBController/RGBController_LogitechG810.h
+        RGBController/RGBController_LogitechGProWireless.h
+        RGBController/RGBController_MSI3Zone.h
+        RGBController/RGBController_MSIGPU.h
+        RGBController/RGBController_MSIGPU.h
+        RGBController/RGBController_MSIMysticLight.h
+        RGBController/RGBController_MSIRGB.h
+        RGBController/RGBController_Network.h
+        RGBController/RGBController_NZXTHue2.h
+        RGBController/RGBController_NZXTKraken.h
+        RGBController/RGBController_PatriotViper.h
+        RGBController/RGBController_Polychrome.h
+        RGBController/RGBController_PoseidonZRGB.h
+        RGBController/RGBController_RedragonK556.h
+        RGBController/RGBController_RedragonM711.h
+        RGBController/RGBController_RGBFusion.h
+        RGBController/RGBController_RGBFusion2DRAM.h
+        RGBController/RGBController_RGBFusion2SMBus.h
+        RGBController/RGBController_RGBFusion2USB.h
+        RGBController/RGBController_RGBFusionGPU.h
+        RGBController/RGBController_SapphireGPU.h
+        RGBController/RGBController_SteelSeriesRival.h
+        RGBController/RGBController_SteelSeriesSiberia.h
+        RGBController/RGBController_SteelSeriesApex.h
+
+        $<$<PLATFORM_ID:Linux>:
+            i2c_smbus/i2c_smbus_linux.h
+            RGBController/RGBController_Faustus.h>
+
+        $<$<PLATFORM_ID:Windows>:
+            dependencies/display-library/include/adl_defines.h
+            dependencies/display-library/include/adl_sdk.h
+            dependencies/display-library/include/adl_structures.h
+            dependencies/inpout32_1501/Win32/inpout32.h
+            dependencies/NVFC/nvapi.h
+            i2c_smbus/i2c_smbus_i801.h
+            i2c_smbus/i2c_smbus_nct6775.h
+            i2c_smbus/i2c_smbus_nvapi.h
+            i2c_smbus/i2c_smbus_piix4.h
+            wmi/wmi.h
+            RGBController/RGBController_OpenRazerWindows.h>)
+
+set(OPENRGB_CXX_FLAGS
+        $<$<OR:$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>,$<C_COMPILER_ID:GNU>>:
+        -pipe
+        $<$<CONFIG:Debug>:-O0 -Wall -Wextra>>
+        $<$<C_COMPILER_ID:MSVC>:
+        $<$<CONFIG:Debug>:/Od /Wall /Zi>>)
+
+string(TIMESTAMP OPENRGB_BUILDDATE "%a, %d %b %Y %H:%M:%SZ")
+execute_process(COMMAND
+        "${GIT_EXECUTABLE}" rev-parse HEAD
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE OPENRGB_GIT_COMMIT_ID
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND
+        "${GIT_EXECUTABLE}" show -s --format=%ci HEAD
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE OPENRGB_GIT_COMMIT_DATE
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND
+        "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE OPENRGB_GIT_BRANCH
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+add_executable(openrgb
+        dependencies/dmiinfo.cpp
+        dependencies/ColorWheel/ColorWheel.cpp
+        dependencies/libe131/src/e131.c
+        main.cpp
+        cli.cpp
+        NetworkClient.cpp
+        NetworkServer.cpp
+        ProfileManager.cpp
+        ResourceManager.cpp
+        i2c_smbus/i2c_smbus.cpp
+        i2c_tools/i2c_tools.cpp
+        qt/OpenRGBClientInfoPage.cpp
+        qt/OpenRGBDeviceInfoPage.cpp
+        qt/OpenRGBDevicePage.cpp
+        qt/OpenRGBDialog.cpp
+        qt/OpenRGBDialog2.cpp
+        qt/OpenRGBProfileSaveDialog.cpp
+        qt/OpenRGBServerInfoPage.cpp
+        qt/OpenRGBSoftwareInfoPage.cpp
+        qt/OpenRGBSystemInfoPage.cpp
+        qt/OpenRGBZoneResizeDialog.cpp
+        qt/hsv.cpp
+        serial_port/serial_port.cpp
+        super_io/super_io.cpp
+        Controllers/AMDWraithPrismController/AMDWraithPrismController.cpp
+        Controllers/AMDWraithPrismController/AMDWraithPrismControllerDetect.cpp
+        Controllers/AuraUSBController/AuraUSBController.cpp
+        Controllers/AuraUSBController/AuraAddressableController.cpp
+        Controllers/AuraUSBController/AuraMainboardController.cpp
+        Controllers/AuraUSBController/AuraUSBControllerDetect.cpp
+        Controllers/AuraCoreController/AuraCoreController.cpp
+        Controllers/AuraCoreController/AuraCoreControllerDetect.cpp
+        Controllers/AuraGPUController/AuraGPUController.cpp
+        Controllers/AuraGPUController/AuraGPUControllerDetect.cpp
+        Controllers/AuraSMBusController/AuraSMBusController.cpp
+        Controllers/AuraSMBusController/AuraSMBusControllerDetect.cpp
+        Controllers/CoolerMasterController/CMMP750Controller.cpp
+        Controllers/CoolerMasterController/CoolerMasterControllerDetect.cpp
+        Controllers/CorsairLightingNodeController/CorsairLightingNodeController.cpp
+        Controllers/CorsairLightingNodeController/CorsairLightingNodeControllerDetect.cpp
+        Controllers/CorsairPeripheralController/CorsairPeripheralController.cpp
+        Controllers/CorsairPeripheralController/CorsairPeripheralControllerDetect.cpp
+        Controllers/CorsairVengeanceController/CorsairVengeanceController.cpp
+        Controllers/CorsairVengeanceController/CorsairVengeanceControllerDetect.cpp
+        Controllers/CorsairVengeanceProController/CorsairVengeanceProController.cpp
+        Controllers/CorsairVengeanceProController/CorsairVengeanceProControllerDetect.cpp
+        Controllers/CrucialController/CrucialController.cpp
+        Controllers/CrucialController/CrucialControllerDetect.cpp
+        Controllers/DuckyKeyboardController/DuckyKeyboardController.cpp
+        Controllers/DuckyKeyboardController/DuckyKeyboardControllerDetect.cpp
+        Controllers/EKController/EKControllerDetect.cpp
+        Controllers/EKController/EKController.cpp
+        Controllers/GalaxGPUController/GalaxGPUController.cpp
+        Controllers/GalaxGPUController/GalaxGPUControllerDetect.cpp
+        Controllers/GloriousModelOController/GloriousModelOController.cpp
+        Controllers/GloriousModelOController/GloriousModelOControllerDetect.cpp
+        Controllers/HoltekController/HoltekA070Controller.cpp
+        Controllers/HoltekController/HoltekControllerDetect.cpp
+        Controllers/HuePlusController/HuePlusController.cpp
+        Controllers/HuePlusController/HuePlusControllerDetect.cpp
+        Controllers/HyperXDRAMController/HyperXDRAMController.cpp
+        Controllers/HyperXDRAMController/HyperXDRAMControllerDetect.cpp
+        Controllers/HyperXKeyboardController/HyperXAlloyOriginsController.cpp
+        Controllers/HyperXKeyboardController/HyperXKeyboardController.cpp
+        Controllers/HyperXKeyboardController/HyperXKeyboardControllerDetect.cpp
+        Controllers/HyperXMouseController/HyperXMouseControllerDetect.cpp
+        Controllers/HyperXMouseController/HyperXPulsefireSurgeController.cpp
+        Controllers/LEDStripController/LEDStripController.cpp
+        Controllers/LEDStripController/LEDStripControllerDetect.cpp
+        Controllers/LogitechController/LogitechControllerDetect.cpp
+        Controllers/LogitechController/LogitechG203Controller.cpp
+        Controllers/LogitechController/LogitechG203LController.cpp
+        Controllers/LogitechController/LogitechG403Controller.cpp
+        Controllers/LogitechController/LogitechG502PSController.cpp
+        Controllers/LogitechController/LogitechG810Controller.cpp
+        Controllers/LogitechController/LogitechGProWirelessController.cpp
+        Controllers/MSI3ZoneController/MSI3ZoneController.cpp
+        Controllers/MSI3ZoneController/MSI3ZoneControllerDetect.cpp
+        Controllers/MSIGPUController/MSIGPUController.cpp
+        Controllers/MSIGPUController/MSIGPUControllerDetect.cpp
+        Controllers/MSIMysticLightController/MSIMysticLightController.cpp
+        Controllers/MSIMysticLightController/MSIMysticLightControllerDetect.cpp
+        Controllers/MSIRGBController/MSIRGBController.cpp
+        Controllers/MSIRGBController/MSIRGBControllerDetect.cpp
+        Controllers/NZXTHue2Controller/NZXTHue2Controller.cpp
+        Controllers/NZXTHue2Controller/NZXTHue2ControllerDetect.cpp
+        Controllers/NZXTKrakenController/NZXTKrakenController.cpp
+        Controllers/NZXTKrakenController/NZXTKrakenControllerDetect.cpp
+        Controllers/PatriotViperController/PatriotViperController.cpp
+        Controllers/PatriotViperController/PatriotViperControllerDetect.cpp
+        Controllers/PolychromeController/PolychromeController.cpp
+        Controllers/PolychromeController/PolychromeControllerDetect.cpp
+        Controllers/PoseidonZRGBController/PoseidonZRGBController.cpp
+        Controllers/PoseidonZRGBController/PoseidonZRGBControllerDetect.cpp
+        Controllers/RGBFusionController/RGBFusionController.cpp
+        Controllers/RGBFusionController/RGBFusionControllerDetect.cpp
+        Controllers/RGBFusion2DRAMController/RGBFusion2DRAMController.cpp
+        Controllers/RGBFusion2DRAMController/RGBFusion2DRAMControllerDetect.cpp
+        Controllers/RGBFusion2SMBusController/RGBFusion2SMBusController.cpp
+        Controllers/RGBFusion2SMBusController/RGBFusion2SMBusControllerDetect.cpp
+        Controllers/RGBFusion2USBController/RGBFusion2USBController.cpp
+        Controllers/RGBFusion2USBController/RGBFusion2USBControllerDetect.cpp
+        Controllers/RGBFusionGPUController/RGBFusionGPUController.cpp
+        Controllers/RGBFusionGPUController/RGBFusionGPUControllerDetect.cpp
+        Controllers/RedragonController/RedragonK556Controller.cpp
+        Controllers/RedragonController/RedragonM711Controller.cpp
+        Controllers/RedragonController/RedragonControllerDetect.cpp
+        Controllers/SapphireGPUController/SapphireGPUController.cpp
+        Controllers/SapphireGPUController/SapphireGPUControllerDetect.cpp
+        Controllers/SteelSeriesController/SteelSeriesRivalController.cpp
+        Controllers/SteelSeriesController/SteelSeriesSiberiaController.cpp
+        Controllers/SteelSeriesController/SteelSeriesApexController.cpp
+        Controllers/SteelSeriesController/SteelSeriesControllerDetect.cpp
+        Controllers/TecknetController/TecknetController.cpp
+        Controllers/TecknetController/TecknetControllerDetect.cpp
+        Controllers/ThermaltakeRiingController/ThermaltakeRiingController.cpp
+        Controllers/ThermaltakeRiingController/ThermaltakeRiingControllerDetect.cpp
+        RGBController/RGBController.cpp
+        RGBController/E131ControllerDetect.cpp
+        RGBController/RGBController_AMDWraithPrism.cpp
+        RGBController/RGBController_AuraUSB.cpp
+        RGBController/RGBController_AuraCore.cpp
+        RGBController/RGBController_AuraGPU.cpp
+        RGBController/RGBController_AuraSMBus.cpp
+        RGBController/RGBController_CMMP750Controller.cpp
+        RGBController/RGBController_CorsairHydro.cpp
+        RGBController/RGBController_CorsairLightingNode.cpp
+        RGBController/RGBController_CorsairPeripheral.cpp
+        RGBController/RGBController_CorsairVengeance.cpp
+        RGBController/RGBController_CorsairVengeancePro.cpp
+        RGBController/RGBController_Crucial.cpp
+        RGBController/RGBController_DuckyKeyboard.cpp
+        RGBController/RGBController_Dummy.cpp
+        RGBController/RGBController_EKController.cpp
+        RGBController/RGBController_GalaxGPU.cpp
+        RGBController/RGBController_GloriousModelO.cpp
+        RGBController/RGBController_HoltekA070.cpp
+        RGBController/RGBController_HuePlus.cpp
+        RGBController/RGBController_HyperXAlloyOrigins.cpp
+        RGBController/RGBController_HyperXDRAM.cpp
+        RGBController/RGBController_HyperXKeyboard.cpp
+        RGBController/RGBController_HyperXPulsefireSurge.cpp
+        RGBController/RGBController_E131.cpp
+        RGBController/RGBController_LEDStrip.cpp
+        RGBController/RGBController_LogitechG203.cpp
+        RGBController/RGBController_LogitechG203L.cpp
+        RGBController/RGBController_LogitechG403.cpp
+        RGBController/RGBController_LogitechG502PS.cpp
+        RGBController/RGBController_LogitechG810.cpp
+        RGBController/RGBController_LogitechGProWireless.cpp
+        RGBController/RGBController_MSI3Zone.cpp
+        RGBController/RGBController_MSIGPU.cpp
+        RGBController/RGBController_MSIMysticLight.cpp
+        RGBController/RGBController_MSIRGB.cpp
+        RGBController/RGBController_Network.cpp
+        RGBController/RGBController_NZXTHue2.cpp
+        RGBController/RGBController_NZXTKraken.cpp
+        RGBController/RGBController_PatriotViper.cpp
+        RGBController/RGBController_Polychrome.cpp
+        RGBController/RGBController_PoseidonZRGB.cpp
+        RGBController/RGBController_RedragonK556.cpp
+        RGBController/RGBController_RedragonM711.cpp
+        RGBController/RGBController_RGBFusion.cpp
+        RGBController/RGBController_RGBFusion2DRAM.cpp
+        RGBController/RGBController_RGBFusion2SMBus.cpp
+        RGBController/RGBController_RGBFusion2USB.cpp
+        RGBController/RGBController_RGBFusionGPU.cpp
+        RGBController/RGBController_SapphireGPU.cpp
+        RGBController/RGBController_SteelSeriesRival.cpp
+        RGBController/RGBController_SteelSeriesSiberia.cpp
+        RGBController/RGBController_SteelSeriesApex.cpp
+        RGBController/RGBController_Tecknet.cpp
+        RGBController/RGBController_ThermaltakeRiing.cpp
+
+        qt/resources.qrc
+        qt/OpenRGBClientInfoPage.ui
+        qt/OpenRGBDeviceInfoPage.ui
+        qt/OpenRGBDevicePage.ui
+        qt/OpenRGBDialog.ui
+        qt/OpenRGBDialog2.ui
+        qt/OpenRGBProfileSaveDialog.ui
+        qt/OpenRGBServerInfoPage.ui
+        qt/OpenRGBSoftwareInfoPage.ui
+        qt/OpenRGBSystemInfoPage.ui
+        qt/OpenRGBZoneResizeDialog.ui
+
+        $<$<PLATFORM_ID:Linux>:
+            i2c_smbus/i2c_smbus_linux.cpp
+            RGBController/OpenRazerDetect.cpp
+            RGBController/RGBController_Faustus.cpp
+            RGBController/RGBController_OpenRazer.cpp>
+
+        $<$<PLATFORM_ID:Windows>:
+            dependencies/nvfc/nvapi.cpp
+            i2c_smbus/i2c_smbus_amdadl.cpp
+            i2c_smbus/i2c_smbus_i801.cpp
+            i2c_smbus/i2c_smbus_nct6775.cpp
+            i2c_smbus/i2c_smbus_nvapi.cpp
+            i2c_smbus/i2c_smbus_piix4.cpp
+            serial_port/find_usb_serial_port_win.cpp
+            wmi/wmi.cpp
+            RGBController/OpenRazerWindowsDetect.cpp
+            RGBController/RGBController_OpenRazerWindows.cpp>)
+
+target_include_directories(openrgb PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        dependencies/ColorWheel
+        dependencies/libe131/src/
+        i2c_smbus/
+        i2c_tools/
+        Controllers/AMDWraithPrismController/
+        Controllers/AuraUSBController/
+        Controllers/AuraCoreController/
+        Controllers/AuraGPUController/
+        Controllers/AuraSMBusController/
+        Controllers/CoolerMasterController/
+        Controllers/CorsairHydroController/
+        Controllers/CorsairPeripheralController/
+        Controllers/CorsairLightingNodeController/
+        Controllers/CorsairVengeanceController/
+        Controllers/CorsairVengeanceProController/
+        Controllers/CrucialController/
+        Controllers/DuckyKeyboardController/
+        Controllers/GalaxGPUController/
+        Controllers/GloriousModelOController/
+        Controllers/HoltekController/
+        Controllers/HuePlusController/
+        Controllers/HyperXDRAMController/
+        Controllers/HyperXKeyboardController/
+        Controllers/HyperXMouseController/
+        Controllers/LEDStripController/
+        Controllers/LogitechController/
+        Controllers/MSI3ZoneController/
+        Controllers/MSIGPUController/
+        Controllers/MSIMysticLightController/
+        Controllers/MSIRGBController/
+        Controllers/NZXTHue2Controller/
+        Controllers/NZXTKrakenController/
+        Controllers/PatriotViperController/
+        Controllers/PolychromeController/
+        Controllers/PoseidonZRGBController/
+        Controllers/RedragonController/
+        Controllers/RGBFusionController/
+        Controllers/RGBFusion2DRAMController/
+        Controllers/RGBFusion2SMBusController/
+        Controllers/RGBFusion2USBController/
+        Controllers/RGBFusionGPUController/
+        Controllers/SapphireGPUController/
+        Controllers/SteelSeriesController/
+        Controllers/TecknetController/
+        Controllers/ThermaltakeRiingController/
+        RGBController/
+        qt/
+
+        $<$<PLATFORM_ID:Windows>:
+            dependencies/display-library/included
+            dependencies/hidapid
+            dependencies/inpout32_1501/Win32/
+            dependencies/libusb-1.0.22/include
+            dependencies/NVFCd
+            dependencies/openrazer-win32
+            wmi>)
+target_compile_definitions(openrgb PRIVATE
+        VERSION_STRING="${PROJECT_VERSION}"
+        BUILDDATE_STRING="${OPENRGB_BUILDDATE}"
+        GIT_COMMIT_ID="${OPENRGB_GIT_COMMIT_ID}"
+        GIT_COMMIT_DATE="${OPENRGB_GIT_COMMIT_DATE}"
+        GIT_BRANCH="${OPENRGB_GIT_BRANCH}"
+
+        $<$<PLATFORM_ID:Windows>:
+            USE_HID_USAGE
+            _MBCS
+            WIN32
+            _CRT_SECURE_NO_WARNINGS
+            _WINSOCK_DEPRECATED_NO_WARNINGS
+            WIN32_LEAN_AND_MEAN>)
+target_compile_options(openrgb PRIVATE ${OPENRGB_CXX_FLAGS})
+target_compile_features(openrgb PRIVATE cxx_std_17)
+set_target_properties(openrgb PROPERTIES
+        AUTOMOC ON
+        AUTORCC ON
+        AUTOUIC ON)
+target_link_libraries(openrgb PRIVATE
+        Qt5::Core Qt5::Gui Qt5::Widgets
+        HIDAPI::hidapi LibUSB::libusb
+        OpenRGB::net_port OpenRGB::super_io OpenRGB::serial_port
+        stdc++fs)
+
+if(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/openrazer-win32/OpenRazer64.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/inpout32_1501/x64/inpoutx64.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/libusb-1.0.22/MS64/dll/libusb-1.0.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/hidapi-win/x64/hidapi.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/openrazer-win32/OpenRazer.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/inpout32_1501/Win32/inpout32.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/libusb-1.0.22/MS32/dll/libusb-1.0.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+        add_custom_command(TARGET openrgb POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/dependencies/hidapi-win/x86/hidapi.dll
+                ${CMAKE_CURRENT_BINARY_DIR}/)
+    endif()
+endif()
